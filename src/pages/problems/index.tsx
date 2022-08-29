@@ -1,23 +1,34 @@
-import Head from 'next/head'
-import { NextPage } from 'next'
+import Head from 'next/head';
+import {
+  GetServerSideProps,
+  InferGetServerSidePropsType,
+  NextPage,
+} from 'next';
 
-import Config from '../../config'
+import Config from '../../config';
 
-const Problems: NextPage = ({}) => {
+interface Props {}
+
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  return {
+    props: {},
+  };
+};
+
+const Problems: NextPage<
+  InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({}) => {
   return (
     <>
       <Head>
         <title>{`${Config.title} - Problems`}</title>
       </Head>
 
-      <div>
-        test
-      </div>
+      <div>test</div>
 
-      <style jsx>{`
-      `}</style>
+      <style jsx>{``}</style>
     </>
-  )
-}
+  );
+};
 
-export default Problems
+export default Problems;

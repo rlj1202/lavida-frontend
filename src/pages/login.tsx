@@ -1,9 +1,38 @@
-import Head from 'next/head'
-import { NextPage } from 'next'
+import Head from 'next/head';
+import { NextPage } from 'next';
 
-import Config from '../config'
+import Config from '../config';
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/router';
 
 const Login: NextPage = ({}) => {
+  const router = useRouter();
+
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+
+  const doLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    localStorage.setItem('access_token', data.accessToken);
+    localStorage.setItem('refresh_token', data.refreshToken);
+
+    router.push('/');
+  };
+
   return (
     <>
       <Head>
@@ -12,17 +41,40 @@ const Login: NextPage = ({}) => {
 
       <div className="wrapper">
         <div className="login-form">
-          <form method="POST" id="login-form" action="/auth/signin">
+          <form id="login-form" onSubmit={doLogin}>
             <header className="title">로그인</header>
             <div className="row">
-              <label className="label" htmlFor="id">아이디</label>
-              <input className="input" id="id" placeholder="id" name="id" required/>
+              <label className="label" htmlFor="username">
+                아이디
+              </label>
+              <input
+                className="input"
+                id="username"
+                placeholder="id"
+                name="username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                required
+              />
             </div>
             <div className="row">
-              <label className="label" htmlFor="password">비밀번호</label>
-              <input className="input" id="password" placeholder="password" type="password" name="password" required/>
+              <label className="label" htmlFor="password">
+                비밀번호
+              </label>
+              <input
+                className="input"
+                id="password"
+                placeholder="password"
+                type="password"
+                name="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
             </div>
-            <button className="button" type="submit">확인</button>
+            <button className="button" type="submit">
+              확인
+            </button>
           </form>
         </div>
       </div>
@@ -80,7 +132,7 @@ const Login: NextPage = ({}) => {
         }
       `}</style>
     </>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

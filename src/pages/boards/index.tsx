@@ -1,17 +1,35 @@
-import Head from 'next/head'
-import Link from 'next/link'
+import Head from 'next/head';
+import Link from 'next/link';
 
-// import useSWR from 'swr';
-import fetcher from '../../libs/fetcher'
-import IBoard from '../../interfaces/IBoard'
+import IBoard from '../../interfaces/IBoard';
 
-import Config from '../../config'
+import Config from '../../config';
+import {
+  GetServerSideProps,
+  InferGetServerSidePropsType,
+  NextPage,
+} from 'next';
+import axios from 'axios';
 
-export default function BoardMain() {
-  // const { data, error } = useSWR('/api/boards', fetcher)
-  // const boards = data as IBoard[]
-  const boards = [] as IBoard[]
+interface Props {
+  boards: IBoard[];
+}
 
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  const response = await axios.get<IBoard[]>(
+    `${process.env.API_HOST}/api/boards`,
+  );
+
+  return {
+    props: {
+      boards: response.data,
+    },
+  };
+};
+
+const BoardMain: NextPage<
+  InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ boards }) => {
   return (
     <>
       <Head>
@@ -21,16 +39,17 @@ export default function BoardMain() {
       <div className="wrapper">
         <h1>포럼</h1>
         <div className="boards">
-          { boards && boards.map(board => (
-            <div className="board">
-              <div className="board-title">
-                <Link href={`/board/${board.name}`}><a>{ board.title }</a></Link>
+          {boards &&
+            boards.map((board) => (
+              <div className="board">
+                <div className="board-title">
+                  <Link href={`/boards/${board.slug}`}>
+                    <a>{board.title}</a>
+                  </Link>
+                </div>
+                <div className="board-description">{board.description}</div>
               </div>
-              <div className="board-description">
-                { board.description }
-              </div>
-            </div>
-          )) }
+            ))}
         </div>
       </div>
 
@@ -59,5 +78,7 @@ export default function BoardMain() {
         }
       `}</style>
     </>
-  )
-}
+  );
+};
+
+export default BoardMain;

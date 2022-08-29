@@ -1,50 +1,123 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
-// import useSWR from 'swr'
-import fetcher from '../libs/fetcher'
-import { IUser } from '../interfaces/IUser'
+import { FC, useEffect, useState } from 'react';
 
-const Topbar = ({}) => {
-  // const { data, error } = useSWR('/auth/info', fetcher)
-  // const info = data as (IUser | undefined | null)
-  // const loggedIn = info?.id ? true : false
-  const info: any = {}
-  const loggedIn = false
+import axios from 'axios';
+import { useRouter } from 'next/router';
+
+const Topbar: FC<{}> = ({}) => {
+  const router = useRouter();
+
+  const [userInfo, setUserInfo] = useState<
+    | {
+        username: string;
+      }
+    | undefined
+  >();
+
+  useEffect(() => {
+    axios
+      .post('/api/auth/userinfo', undefined, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      })
+      .then((response) => {
+        setUserInfo(response.data);
+      })
+      .catch((err) => {});
+  }, [router]);
+
+  const doLogout = async () => {
+    axios
+      .post('/api/auth/logout', undefined, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      })
+      .then(async (response) => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+
+        await router.push('/');
+        router.reload();
+      })
+      .catch((err) => {});
+  };
 
   return (
     <div className="topbar">
       <div className="topbar-left">
         <div className="topbar-logo">
-          <Link href="/"><a>{'{ Lavida }'}</a></Link>
+          <Link href="/">
+            <a>{'{ Lavida }'}</a>
+          </Link>
         </div>
-        <div className="topbar-pagelink"><Link href="/"><a>FAQ</a></Link></div>
-        <div className="topbar-pagelink"><Link href="/boards"><a>Forum</a></Link></div>
-        <div className="topbar-pagelink"><Link href="/problems"><a>Problems</a></Link></div>
-        <div className="topbar-pagelink"><Link href="/status"><a>Status</a></Link></div>
-        <div className="topbar-pagelink"><Link href="/contests"><a>Contest</a></Link></div>
-        <div className="topbar-pagelink"><Link href="/"><a>Tools</a></Link></div>
+        <div className="topbar-pagelink">
+          <Link href="/faq">
+            <a>FAQ</a>
+          </Link>
+        </div>
+        <div className="topbar-pagelink">
+          <Link href="/boards">
+            <a>Forum</a>
+          </Link>
+        </div>
+        <div className="topbar-pagelink">
+          <Link href="/problems">
+            <a>Problems</a>
+          </Link>
+        </div>
+        <div className="topbar-pagelink">
+          <Link href="/status">
+            <a>Status</a>
+          </Link>
+        </div>
+        <div className="topbar-pagelink">
+          <Link href="/contests">
+            <a>Contest</a>
+          </Link>
+        </div>
+        <div className="topbar-pagelink">
+          <Link href="/tools">
+            <a>Tools</a>
+          </Link>
+        </div>
       </div>
       <div className="topbar-right">
         <div className="topbar-buttons">
-          {!loggedIn && <>
-            <span className="topbar-button login">
-              <Link href="/login"><a>로그인</a></Link>
-            </span>
-            <span className="topbar-button register">
-              <Link href="/register"><a>회원가입</a></Link>
-            </span>
-          </>}
-          {loggedIn && <>
-            <span>
-              {info?.authId + ':' + info?.name}
-            </span>
-            <span className="topbar-button">
-              <Link href="/"><a>내 정보</a></Link>
-            </span>
-            <span className="topbar-button logout">
-              <Link href="/auth/signout"><a>로그아웃</a></Link>
-            </span>
-          </>}
+          {!userInfo && (
+            <>
+              <span className="topbar-button login">
+                <Link href="/login">
+                  <a>로그인</a>
+                </Link>
+              </span>
+              <span className="topbar-button register">
+                <Link href="/register">
+                  <a>회원가입</a>
+                </Link>
+              </span>
+            </>
+          )}
+          {userInfo && (
+            <>
+              <span>{userInfo.username}</span>
+              <span className="topbar-button">
+                <Link
+                  href={{
+                    pathname: '/users/[username]',
+                    query: { username: userInfo.username },
+                  }}
+                >
+                  <a>내 정보</a>
+                </Link>
+              </span>
+              <button className="topbar-button logout" onClick={doLogout}>
+                로그아웃
+              </button>
+            </>
+          )}
         </div>
       </div>
       <style jsx>{`
@@ -75,8 +148,11 @@ const Topbar = ({}) => {
         }
         .topbar-button {
           font-size: 13px;
+          font-family: inherit;
           border-radius: 5px;
           border: 1px solid #dddddd;
+          background-color: white;
+          cursor: pointer;
 
           padding: 5px 20px;
           margin-left: 10px;
@@ -87,7 +163,7 @@ const Topbar = ({}) => {
         }
       `}</style>
     </div>
-  )
-}
+  );
+};
 
-export default Topbar
+export default Topbar;

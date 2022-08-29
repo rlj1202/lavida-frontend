@@ -1,23 +1,21 @@
-import Head from 'next/head'
-import { NextPage } from 'next'
+import Head from 'next/head';
+import { NextPage } from 'next';
 
-import Topbar from './topbar'
-import Footer from './footer'
+import Topbar from './topbar';
+import Footer from './footer';
 
-import Config from '../config'
+import Config from '../config';
 
 const Layout: NextPage = ({ children }) => {
   return (
     <>
       <Head>
-        <title>{ Config.title }</title>
+        <title>{Config.title}</title>
       </Head>
 
       <Topbar />
 
-      <div className="wrapper">
-        { children }
-      </div>
+      <div className="wrapper">{children}</div>
 
       <Footer />
 
@@ -29,7 +27,7 @@ const Layout: NextPage = ({ children }) => {
         }
       `}</style>
     </>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

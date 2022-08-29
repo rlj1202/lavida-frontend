@@ -1,14 +1,11 @@
 export interface IUser {
-    id: number
-    authId: string
-    email: string
-    name: string
+  username: string;
 }
 
 export interface IUserRegisteration {
-    id: string
-    name: string
-    email: string
-    password: string
-    passwordCheck: string
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  passwordCheck: string;
 }

@@ -1,6 +1,6 @@
 export default interface IBoard {
-    id: number
-    name: string
-    title: string
-    description: string
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
 }

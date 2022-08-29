@@ -1,35 +1,51 @@
+import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import { FormEvent, useState } from 'react';
 
-import Topbar from '../../../components/topbar';
-import Footer from '../../../components/footer';
-
-export default function Create() {
+const Create: NextPage = () => {
   const router = useRouter();
   const { bname } = router.query;
 
+  const [title, setTitle] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+
+  const doCreateArticle = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // TODO: do something with title and content
+  };
+
   return (
     <>
-      <Topbar />
-
       <div className="wrapper">
-        <div>
-          { bname }
-        </div>
+        <div>{bname}</div>
         <h1>새 글 쓰기</h1>
-        <form method="POST" action={`/api/boards/${bname}/posts`}>
+        <form onSubmit={doCreateArticle}>
           <label htmlFor="title">
             <h2>제목</h2>
           </label>
-          <input id="title" name="title" className="title" />
+          <input
+            id="title"
+            name="title"
+            className="title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
           <label htmlFor="content">
             <h2>내용</h2>
           </label>
-          <textarea id="content" name="content" className="content"></textarea>
-          <button type="submit" className="submit">작성</button>
+          <textarea
+            id="content"
+            name="content"
+            className="content"
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+          ></textarea>
+          <button type="submit" className="submit">
+            작성
+          </button>
         </form>
       </div>
-
-      <Footer />
 
       <style jsx>{`
         .wrapper {
@@ -66,4 +82,6 @@ export default function Create() {
       `}</style>
     </>
   );
-}
+};
+
+export default Create;
