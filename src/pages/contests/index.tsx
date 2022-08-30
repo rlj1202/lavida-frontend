@@ -1,7 +1,8 @@
-import Head from 'next/head'
-import { NextPage } from 'next'
+import Head from 'next/head';
+import { NextPage } from 'next';
 
-import Config from '../../config'
+import Config from '../../config';
+import DefaultWrapper from '../../components/defaultWrapper';
 
 const Contests: NextPage = ({}) => {
   return (
@@ -10,10 +11,11 @@ const Contests: NextPage = ({}) => {
         <title>{`${Config.title} - Contests`}</title>
       </Head>
 
-      <style jsx>{`
-      `}</style>
-    </>
-  )
-}
+      <DefaultWrapper></DefaultWrapper>
 
-export default Contests
+      <style jsx>{``}</style>
+    </>
+  );
+};
+
+export default Contests;

@@ -10,6 +10,7 @@ import {
   NextPage,
 } from 'next';
 import axios from 'axios';
+import DefaultWrapper from '../../components/defaultWrapper';
 
 interface Props {
   boards: IBoard[];
@@ -36,7 +37,7 @@ const BoardMain: NextPage<
         <title>{`${Config.title} - Forum`}</title>
       </Head>
 
-      <div className="wrapper">
+      <DefaultWrapper>
         <h1>포럼</h1>
         <div className="boards">
           {boards &&
@@ -51,12 +52,9 @@ const BoardMain: NextPage<
               </div>
             ))}
         </div>
-      </div>
+      </DefaultWrapper>
 
       <style jsx>{`
-        .wrapper {
-        }
-
         .boards {
           border: 1px solid #dddddd;
           border-radius: 5px;

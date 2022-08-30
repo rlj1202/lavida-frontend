@@ -7,15 +7,20 @@ import {
 
 import dateFormat from 'dateformat';
 
-import IPost from '../../interfaces/IPost';
-import { IUser } from '../../interfaces/IUser';
+import IArticle from '../../interfaces/IArticle';
+import IUser from '../../interfaces/IUser';
 
 import Config from '../../config';
 import Head from 'next/head';
 import axios from 'axios';
+import { FormEvent, useState } from 'react';
+import DefaultWrapper from '../../components/defaultWrapper';
+import IComment from '../../interfaces/IComment';
+import { useRouter } from 'next/router';
 
 interface Props {
-  post: IPost;
+  user: IUser | null;
+  article: IArticle;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -23,19 +28,54 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   const { pid } = context.query;
 
-  const response = await axios.get<IPost>(`/api/articles/${pid}`);
+  const { data: article } = await axios.get<IArticle>(
+    `${process.env.API_HOST}/api/articles/${pid}`,
+  );
+
+  const user = await axios
+    .post<IUser | null>(
+      `${process.env.API_HOST}/api/auth/userinfo`,
+      undefined,
+      {
+        headers: {
+          Authorization: `Bearer ${context.req.cookies['access_token']}`,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((err) => null);
 
   return {
     props: {
-      post: response.data,
+      user: user,
+      article: article,
     },
   };
 };
 
 const Post: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ post }) => {
-  let user: IUser | undefined;
+> = ({ user, article }) => {
+  const router = useRouter();
+  const { pid } = router.query;
+
+  const [commentContent, setCommentContent] = useState<string>('');
+
+  const doAddComment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    await axios.post<IComment>(
+      `/api/comments`,
+      {
+        content: commentContent,
+      },
+      {
+        params: { article: pid },
+      },
+    );
+
+    router.reload();
+  };
 
   return (
     <>
@@ -43,50 +83,48 @@ const Post: NextPage<
         <title>{`${Config.title} - post`}</title>
       </Head>
 
-      <div className="wrapper">
-        <div className="postid">#{post?.id}</div>
-        <div className="author">{post?.author?.username}가 작성</div>
+      <DefaultWrapper>
+        <div className="postid">#{article?.id}</div>
+        <div className="author">{article?.author?.username}가 작성</div>
         <div className="date">
-          {dateFormat(post?.createdAt)}에 작성됨 · {dateFormat(post?.updatedAt)}
-          에 수정됨
+          {dateFormat(article?.createdAt)}에 작성됨 ·{' '}
+          {dateFormat(article?.updatedAt)}에 수정됨
         </div>
-        <h1>{post?.title}</h1>
-        <div className="content">{post?.content}</div>
+        <h1>{article?.title}</h1>
+        <div className="content">{article?.content}</div>
 
         <div className="comments">
-          {post.comments &&
-            post.comments.map((comment) => (
-              <div className="comment">
+          {article.comments &&
+            article.comments.map((comment) => (
+              <div className="comment" key={comment.id}>
                 <div className="comment-author">{comment.author?.username}</div>
                 <div className="comment-date">
                   {dateFormat(comment.createdAt)}에 작성됨
                 </div>
                 <div className="comment-content">{comment.content}</div>
                 <div className="comment-buttons">
-                  <span className="comment-button">
-                    <Link href="/">
-                      <a>수정</a>
-                    </Link>
-                  </span>
-                  <span className="comment-button">
-                    <Link href="/">
-                      <a>삭제</a>
-                    </Link>
-                  </span>
-                  <span className="comment-button">
-                    <Link href="/">
-                      <a>답글</a>
-                    </Link>
-                  </span>
+                  <button className="comment-button" onClick={() => {}}>
+                    수정
+                  </button>
+                  <button className="comment-button" onClick={() => {}}>
+                    삭제
+                  </button>
+                  <button className="comment-button" onClick={() => {}}>
+                    답글
+                  </button>
                 </div>
               </div>
             ))}
           {user && (
             <>
               <div className="comment">
-                <form method="POST" action={`/api/posts/${post?.id}/comments`}>
-                  <input name="authorId" value={user.username} hidden />
-                  <textarea className="comment-input" name="content"></textarea>
+                <form onSubmit={doAddComment}>
+                  <textarea
+                    className="comment-input"
+                    name="content"
+                    value={commentContent}
+                    onChange={(event) => setCommentContent(event.target.value)}
+                  ></textarea>
                   <button type="submit" className="comment-submit">
                     댓글 쓰기
                   </button>
@@ -106,15 +144,9 @@ const Post: NextPage<
             </>
           )}
         </div>
-      </div>
+      </DefaultWrapper>
 
       <style jsx>{`
-        .wrapper {
-          max-width: 1000px;
-          margin: 40px auto;
-          padding: 0 40px;
-        }
-
         .author,
         .date,
         .postid {
@@ -147,6 +179,9 @@ const Post: NextPage<
         .comment-button {
           font-size: 0.7rem;
           margin-right: 5px;
+          background: transparent;
+          border: none;
+          padding: 0;
         }
         .comment-input {
           border: 1px solid #dddddd;

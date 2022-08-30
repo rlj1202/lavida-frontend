@@ -1,32 +1,35 @@
-import Head from 'next/head'
-import { NextPage, GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import Head from 'next/head';
+import {
+  NextPage,
+  GetServerSideProps,
+  InferGetServerSidePropsType,
+} from 'next';
+import DefaultWrapper from '../../../components/defaultWrapper';
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.query
+  const { id } = context.query;
 
   return {
     props: {
-      id
-    }
-  }
-}
+      id,
+    },
+  };
+};
 
-const Submit: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ id }) => {
+const Submit: NextPage<
+  InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ id }) => {
   return (
     <>
       <Head>
         <title>{`${id}`}</title>
       </Head>
 
-      <div>
-        test
-      </div>
+      <DefaultWrapper>test</DefaultWrapper>
 
-      <style jsx>{`
-
-      `}</style>
+      <style jsx>{``}</style>
     </>
-  )
-}
+  );
+};
 
-export default Submit
+export default Submit;

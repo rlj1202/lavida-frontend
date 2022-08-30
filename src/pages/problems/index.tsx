@@ -6,6 +6,7 @@ import {
 } from 'next';
 
 import Config from '../../config';
+import DefaultWrapper from '../../components/defaultWrapper';
 
 interface Props {}
 
@@ -24,7 +25,9 @@ const Problems: NextPage<
         <title>{`${Config.title} - Problems`}</title>
       </Head>
 
-      <div>test</div>
+      <DefaultWrapper>
+        <div>test</div>
+      </DefaultWrapper>
 
       <style jsx>{``}</style>
     </>

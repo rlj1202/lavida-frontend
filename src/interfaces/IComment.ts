@@ -1,13 +1,13 @@
-import { IUser } from './IUser'
-import IPost from './IPost'
+import IUser from './IUser';
+import IArticle from './IArticle';
 
 export default interface IComment {
-    id: number
-    content: string
-    authorId: number
-    author: IUser
-    postId: number
-    post: IPost
-    createdAt: Date
-    updatedAt: Date
+  id: number;
+  content: string;
+  authorId?: number;
+  author?: IUser;
+  articleId?: number;
+  article?: IArticle;
+  createdAt: Date;
+  updatedAt: Date;
 }

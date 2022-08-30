@@ -1,24 +1,67 @@
-import { NextPage } from 'next';
+import axios from 'axios';
+import {
+  GetServerSideProps,
+  InferGetServerSidePropsType,
+  NextPage,
+} from 'next';
 import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
+import DefaultWrapper from '../../../components/defaultWrapper';
+import IArticle from '../../../interfaces/IArticle';
+import IBoard from '../../../interfaces/IBoard';
 
-const Create: NextPage = () => {
+interface Props {
+  board: IBoard;
+}
+
+export const getServerSideProps: GetServerSideProps<Props> = async (
+  context,
+) => {
+  const { bname } = context.query;
+
+  const { data: board } = await axios.get<IBoard>(
+    `${process.env.API_HOST}/api/boards/${bname}`,
+  );
+
+  return {
+    props: {
+      board: board,
+    },
+  };
+};
+
+const Create: NextPage<
+  InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ board }) => {
   const router = useRouter();
-  const { bname } = router.query;
 
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
 
-  const doCreateArticle = (event: FormEvent<HTMLFormElement>) => {
+  const doCreateArticle = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // TODO: do something with title and content
+    await axios
+      .post<IArticle>(
+        `/api/articles`,
+        {
+          title: title,
+          content: content,
+        },
+        { params: { board: board.slug } },
+      )
+      .then((response) => {
+        router.back();
+      })
+      .catch((err) => {
+        router.reload();
+      });
   };
 
   return (
     <>
-      <div className="wrapper">
-        <div>{bname}</div>
+      <DefaultWrapper>
+        <div>{board.title}</div>
         <h1>새 글 쓰기</h1>
         <form onSubmit={doCreateArticle}>
           <label htmlFor="title">
@@ -45,15 +88,9 @@ const Create: NextPage = () => {
             작성
           </button>
         </form>
-      </div>
+      </DefaultWrapper>
 
       <style jsx>{`
-        .wrapper {
-          max-width: 1000px;
-          margin: 50px auto;
-          padding: 0 40px;
-        }
-
         .title {
           display: block;
           width: 100%;

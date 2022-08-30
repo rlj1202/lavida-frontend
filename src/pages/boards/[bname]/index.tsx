@@ -10,10 +10,12 @@ import axios from 'axios';
 import dateFormat from 'dateformat';
 
 import IBoard from '../../../interfaces/IBoard';
-import IPost from '../../../interfaces/IPost';
+import IArticle from '../../../interfaces/IArticle';
+import DefaultWrapper from '../../../components/defaultWrapper';
 
 interface Props {
   board: IBoard;
+  articles: IArticle[];
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -21,24 +23,28 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   var { bname } = context.query;
 
-  const response = await axios.get<IBoard>(
+  const { data: board } = await axios.get<IBoard>(
     `${process.env.API_HOST}/api/boards/${bname}`,
+  );
+
+  const { data: articles } = await axios.get<IArticle[]>(
+    `${process.env.API_HOST}/api/articles`,
+    { params: { board: bname } },
   );
 
   return {
     props: {
-      board: response.data,
+      board: board,
+      articles: articles,
     },
   };
 };
 
 const Board: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ board }) => {
+> = ({ board, articles }) => {
   const router = useRouter();
   const { bname } = router.query;
-
-  const posts: IPost[] = [];
 
   return (
     <>
@@ -46,7 +52,7 @@ const Board: NextPage<
         <title>{board?.title ?? bname}</title>
       </Head>
 
-      <div className="wrapper">
+      <DefaultWrapper>
         <h1>{board?.title ?? bname}</h1>
         <h2>{board?.description ?? 'no description'}</h2>
 
@@ -63,8 +69,8 @@ const Board: NextPage<
         </div>
 
         <div className="posts">
-          {posts &&
-            posts.map((post: IPost, index) => {
+          {articles &&
+            articles.map((article: IArticle, index) => {
               return (
                 <div key={index} className="post">
                   <div className="post-main">
@@ -73,17 +79,19 @@ const Board: NextPage<
                       <span className="tag">테스트</span>
                     </div>
                     <div className="post-title">
-                      <Link href={`/post/${post.id}`}>
-                        <a>{post.title}</a>
+                      <Link href={`/posts/${article.id}`}>
+                        <a>{article.title}</a>
                       </Link>
                     </div>
                   </div>
                   <div className="post-likes">좋아요 수: 0</div>
                   <div className="post-comments">댓글 수: 0</div>
                   <div className="post-info">
-                    <div className="post-author">{post.author?.username}</div>
+                    <div className="post-author">
+                      {article.author?.username}
+                    </div>
                     <div className="post-date">
-                      {dateFormat(post.createdAt)}
+                      {dateFormat(article.createdAt)}
                     </div>
                   </div>
                 </div>
@@ -101,15 +109,9 @@ const Board: NextPage<
             <div className="paginator-cell next">next</div>
           </div>
         </div>
-      </div>
+      </DefaultWrapper>
 
       <style jsx>{`
-        .wrapper {
-          padding: 0 40px;
-          max-width: 1000px;
-          margin: 50px auto;
-        }
-
         .toolbar {
           display: flex;
           flex-direction: row;

@@ -19,12 +19,16 @@ a {
   box-sizing: border-box;
 }
 
+button {
+  cursor: pointer;
+}
+
 :root {
-  --ansi-red: #E1443D;
+  --ansi-red: #e1443d;
   --ansi-black: #383131;
-  --ansi-white: #F6F1F1;
-  --ansi-cyan: #75B5C4;
-  --ansi-yellow: #EEE273;
-  --ansi-green: #A6D3B2;
-  --ansi-brown: #D5C195;
+  --ansi-white: #f6f1f1;
+  --ansi-cyan: #75b5c4;
+  --ansi-yellow: #eee273;
+  --ansi-green: #a6d3b2;
+  --ansi-brown: #d5c195;
 }

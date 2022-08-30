@@ -17,11 +17,7 @@ const Topbar: FC<{}> = ({}) => {
 
   useEffect(() => {
     axios
-      .post('/api/auth/userinfo', undefined, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      })
+      .post('/api/auth/userinfo')
       .then((response) => {
         setUserInfo(response.data);
       })
@@ -30,16 +26,10 @@ const Topbar: FC<{}> = ({}) => {
 
   const doLogout = async () => {
     axios
-      .post('/api/auth/logout', undefined, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      })
+      .post('/api/auth/logout')
       .then(async (response) => {
-        localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
 
-        await router.push('/');
         router.reload();
       })
       .catch((err) => {});

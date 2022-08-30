@@ -15,17 +15,11 @@ const Layout: NextPage = ({ children }) => {
 
       <Topbar />
 
-      <div className="wrapper">{children}</div>
+      {children}
 
       <Footer />
 
-      <style jsx>{`
-        .wrapper {
-          padding: 0 40px;
-          max-width: 1000px;
-          margin: 0 auto;
-        }
-      `}</style>
+      <style jsx>{``}</style>
     </>
   );
 };

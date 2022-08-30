@@ -5,8 +5,9 @@ import {
   NextPage,
 } from 'next';
 import Head from 'next/head';
+import DefaultWrapper from '../../../components/defaultWrapper';
 import Config from '../../../config';
-import { IUser } from '../../../interfaces/IUser';
+import IUser from '../../../interfaces/IUser';
 
 interface Props {
   user: IUser;
@@ -37,15 +38,9 @@ const UserPage: NextPage<
         <title>{`${Config.title} - user`}</title>
       </Head>
 
-      <div className="wrapper">{user.username}</div>
+      <DefaultWrapper>{user.username}</DefaultWrapper>
 
-      <style jsx>{`
-        .wrapper {
-          padding: 0 40px;
-          max-width: 1000px;
-          margin: 50px auto;
-        }
-      `}</style>
+      <style jsx>{``}</style>
     </>
   );
 };

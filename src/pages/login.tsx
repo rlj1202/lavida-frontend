@@ -2,8 +2,11 @@ import Head from 'next/head';
 import { NextPage } from 'next';
 
 import Config from '../config';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import DefaultWrapper from '../components/defaultWrapper';
+import axios from 'axios';
+import IUser from '../interfaces/IUser';
 
 const Login: NextPage = ({}) => {
   const router = useRouter();
@@ -11,26 +14,37 @@ const Login: NextPage = ({}) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
+  const [user, setUser] = useState<IUser | undefined>();
+
+  useEffect(() => {
+    async function getCurUser() {
+      const user = await axios
+        .post<IUser>(`/api/auth/userinfo`)
+        .then((response) => response.data)
+        .catch((err) => undefined);
+
+      setUser(user);
+    }
+
+    getCurUser();
+  }, []);
+
   const doLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-      }),
+    const response = await axios.post<{
+      accessToken: string;
+      refreshToken: string;
+    }>(`/api/auth/login`, {
+      username: username,
+      password: password,
     });
 
-    const data = await response.json();
+    const data = await response.data;
 
-    localStorage.setItem('access_token', data.accessToken);
     localStorage.setItem('refresh_token', data.refreshToken);
 
-    router.push('/');
+    router.back();
   };
 
   return (
@@ -39,54 +53,50 @@ const Login: NextPage = ({}) => {
         <title>{`${Config.title} - Login`}</title>
       </Head>
 
-      <div className="wrapper">
-        <div className="login-form">
-          <form id="login-form" onSubmit={doLogin}>
-            <header className="title">로그인</header>
-            <div className="row">
-              <label className="label" htmlFor="username">
-                아이디
-              </label>
-              <input
-                className="input"
-                id="username"
-                placeholder="id"
-                name="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-              />
-            </div>
-            <div className="row">
-              <label className="label" htmlFor="password">
-                비밀번호
-              </label>
-              <input
-                className="input"
-                id="password"
-                placeholder="password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
-            <button className="button" type="submit">
-              확인
-            </button>
-          </form>
-        </div>
-      </div>
+      <DefaultWrapper>
+        {user && <div>이미 로그인 하셨습니다.</div>}
+        {!user && (
+          <div className="login-form">
+            <form id="login-form" onSubmit={doLogin}>
+              <header className="title">로그인</header>
+              <div className="row">
+                <label className="label" htmlFor="username">
+                  아이디
+                </label>
+                <input
+                  className="input"
+                  id="username"
+                  placeholder="id"
+                  name="username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="row">
+                <label className="label" htmlFor="password">
+                  비밀번호
+                </label>
+                <input
+                  className="input"
+                  id="password"
+                  placeholder="password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              </div>
+              <button className="button" type="submit">
+                확인
+              </button>
+            </form>
+          </div>
+        )}
+      </DefaultWrapper>
 
       <style jsx>{`
-        .wrapper {
-          height: 100%;
-
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
         .login-form {
           border-radius: 5px;
           border: 1px solid #dddddd;
