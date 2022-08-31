@@ -3,8 +3,36 @@ import { NextPage } from 'next';
 
 import Config from '../config';
 import DefaultWrapper from '../components/defaultWrapper';
+import { FormEvent, useState } from 'react';
+import axios from 'axios';
+import IUser from '../interfaces/IUser';
+import { useRouter } from 'next/router';
 
 const Register: NextPage = ({}) => {
+  const router = useRouter();
+
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [passwordCheck, setPasswordCheck] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+
+  const doRegister = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    await axios.post<IUser>(`/api/users`, {
+      username: username,
+      password: password,
+      email: email,
+    });
+
+    await axios.post(`/api/auth/login`, {
+      username: username,
+      password: password,
+    });
+
+    router.back();
+  };
+
   return (
     <>
       <Head>
@@ -13,7 +41,7 @@ const Register: NextPage = ({}) => {
 
       <DefaultWrapper>
         <div className="form">
-          <form method="POST" id="register-form" action="/auth/signup">
+          <form onSubmit={doRegister}>
             <header className="title">회원가입</header>
             <div className="row">
               <label className="label" htmlFor="id">
@@ -24,6 +52,8 @@ const Register: NextPage = ({}) => {
                 id="id"
                 placeholder="id"
                 name="id"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
                 required
               />
             </div>
@@ -37,6 +67,8 @@ const Register: NextPage = ({}) => {
                 placeholder="password"
                 type="password"
                 name="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 required
               />
             </div>
@@ -50,10 +82,12 @@ const Register: NextPage = ({}) => {
                 placeholder="password"
                 type="password"
                 name="passwordCheck"
+                value={passwordCheck}
+                onChange={(event) => setPasswordCheck(event.target.value)}
                 required
               />
             </div>
-            <div className="row">
+            {/* <div className="row">
               <label className="label" htmlFor="name">
                 이름
               </label>
@@ -64,7 +98,7 @@ const Register: NextPage = ({}) => {
                 name="name"
                 required
               />
-            </div>
+            </div> */}
             <div className="row">
               <label className="label" htmlFor="e-mail">
                 이메일
@@ -74,6 +108,9 @@ const Register: NextPage = ({}) => {
                 id="e-mail"
                 placeholder="e-mail"
                 name="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
               />
             </div>
             <button className="button" type="submit">

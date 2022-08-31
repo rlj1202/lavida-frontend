@@ -77,6 +77,22 @@ const Post: NextPage<
     router.reload();
   };
 
+  const doAddSubcomment = async (comment: IComment) => {
+    // TODO:
+    const response = await axios.post(`/api/comments/${comment.id}`, {
+      content: '',
+    });
+  };
+  const doDeleteComment = async (comment: IComment) => {
+    const response = await axios.delete(`/api/comments/${comment.id}`);
+  };
+  const doUpdateComment = async (comment: IComment) => {
+    // TODO:
+    const response = await axios.patch(`/api/comments/${comment.id}`, {
+      content: '',
+    });
+  };
+
   return (
     <>
       <Head>
@@ -103,13 +119,22 @@ const Post: NextPage<
                 </div>
                 <div className="comment-content">{comment.content}</div>
                 <div className="comment-buttons">
-                  <button className="comment-button" onClick={() => {}}>
+                  <button
+                    className="comment-button"
+                    onClick={() => doUpdateComment(comment)}
+                  >
                     수정
                   </button>
-                  <button className="comment-button" onClick={() => {}}>
+                  <button
+                    className="comment-button"
+                    onClick={() => doDeleteComment(comment)}
+                  >
                     삭제
                   </button>
-                  <button className="comment-button" onClick={() => {}}>
+                  <button
+                    className="comment-button"
+                    onClick={() => doAddSubcomment(comment)}
+                  >
                     답글
                   </button>
                 </div>

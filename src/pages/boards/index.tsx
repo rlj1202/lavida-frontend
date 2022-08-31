@@ -42,7 +42,7 @@ const BoardMain: NextPage<
         <div className="boards">
           {boards &&
             boards.map((board) => (
-              <div className="board">
+              <div className="board" key={board.id}>
                 <div className="board-title">
                   <Link href={`/boards/${board.slug}`}>
                     <a>{board.title}</a>
