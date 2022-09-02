@@ -12,11 +12,18 @@ import IUser from '../../interfaces/IUser';
 
 import Config from '../../config';
 import Head from 'next/head';
-import axios from 'axios';
 import { FormEvent, useState } from 'react';
 import DefaultWrapper from '../../components/defaultWrapper';
 import IComment from '../../interfaces/IComment';
 import { useRouter } from 'next/router';
+import { doGetArticle } from '../../api/articles';
+import { doGetUserInfo } from '../../api/auth';
+import {
+  doCreateComment,
+  doCreateSubComment,
+  doDeleteComment,
+  doUpdateComment,
+} from '../../api/comments';
 
 interface Props {
   user: IUser | null;
@@ -28,22 +35,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   const { pid } = context.query;
 
-  const { data: article } = await axios.get<IArticle>(
-    `${process.env.API_HOST}/api/articles/${pid}`,
-  );
+  if (typeof pid !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
 
-  const user = await axios
-    .post<IUser | null>(
-      `${process.env.API_HOST}/api/auth/userinfo`,
-      undefined,
-      {
-        headers: {
-          Authorization: `Bearer ${context.req.cookies['access_token']}`,
-        },
-      },
-    )
-    .then((response) => response.data)
-    .catch((err) => null);
+  const article = await doGetArticle(parseInt(pid));
+  const user = await doGetUserInfo(context);
 
   return {
     props: {
@@ -59,38 +58,31 @@ const Post: NextPage<
   const router = useRouter();
   const { pid } = router.query;
 
+  if (typeof pid !== 'string') {
+    // XXX:
+    return <></>;
+  }
+
   const [commentContent, setCommentContent] = useState<string>('');
 
-  const doAddComment = async (event: FormEvent<HTMLFormElement>) => {
+  const handleAddComment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    await axios.post<IComment>(
-      `/api/comments`,
-      {
-        content: commentContent,
-      },
-      {
-        params: { article: pid },
-      },
-    );
+    await doCreateComment(parseInt(pid), commentContent);
 
     router.reload();
   };
 
-  const doAddSubcomment = async (comment: IComment) => {
+  const handleAddSubcomment = async (comment: IComment) => {
     // TODO:
-    const response = await axios.post(`/api/comments/${comment.id}`, {
-      content: '',
-    });
+    await doCreateSubComment(comment.id, '');
   };
-  const doDeleteComment = async (comment: IComment) => {
-    const response = await axios.delete(`/api/comments/${comment.id}`);
+  const handleDeleteComment = async (comment: IComment) => {
+    await doDeleteComment(comment.id);
   };
-  const doUpdateComment = async (comment: IComment) => {
+  const handleUpdateComment = async (comment: IComment) => {
     // TODO:
-    const response = await axios.patch(`/api/comments/${comment.id}`, {
-      content: '',
-    });
+    await doUpdateComment(comment.id, '');
   };
 
   return (
@@ -121,19 +113,19 @@ const Post: NextPage<
                 <div className="comment-buttons">
                   <button
                     className="comment-button"
-                    onClick={() => doUpdateComment(comment)}
+                    onClick={() => handleUpdateComment(comment)}
                   >
                     수정
                   </button>
                   <button
                     className="comment-button"
-                    onClick={() => doDeleteComment(comment)}
+                    onClick={() => handleDeleteComment(comment)}
                   >
                     삭제
                   </button>
                   <button
                     className="comment-button"
-                    onClick={() => doAddSubcomment(comment)}
+                    onClick={() => handleAddSubcomment(comment)}
                   >
                     답글
                   </button>
@@ -143,7 +135,7 @@ const Post: NextPage<
           {user && (
             <>
               <div className="comment">
-                <form onSubmit={doAddComment}>
+                <form onSubmit={handleAddComment}>
                   <textarea
                     className="comment-input"
                     name="content"

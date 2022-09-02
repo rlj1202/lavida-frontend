@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {
   GetServerSideProps,
   InferGetServerSidePropsType,
@@ -6,8 +5,9 @@ import {
 } from 'next';
 import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
+import { doCreateArticle } from '../../../api/articles';
+import { doGetBoard } from '../../../api/boards';
 import DefaultWrapper from '../../../components/defaultWrapper';
-import IArticle from '../../../interfaces/IArticle';
 import IBoard from '../../../interfaces/IBoard';
 
 interface Props {
@@ -19,13 +19,17 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   const { bname } = context.query;
 
-  const { data: board } = await axios.get<IBoard>(
-    `${process.env.API_HOST}/api/boards/${bname}`,
-  );
+  if (typeof bname !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
+
+  const board = await doGetBoard(bname);
 
   return {
     props: {
-      board: board,
+      board,
     },
   };
 };
@@ -38,19 +42,11 @@ const Create: NextPage<
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
 
-  const doCreateArticle = async (event: FormEvent<HTMLFormElement>) => {
+  const handleCreateArticle = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    await axios
-      .post<IArticle>(
-        `/api/articles`,
-        {
-          title: title,
-          content: content,
-        },
-        { params: { board: board.slug } },
-      )
-      .then((response) => {
+    await doCreateArticle(title, content, board.slug)
+      .then(() => {
         router.back();
       })
       .catch((err) => {
@@ -63,7 +59,7 @@ const Create: NextPage<
       <DefaultWrapper>
         <div>{board.title}</div>
         <h1>새 글 쓰기</h1>
-        <form onSubmit={doCreateArticle}>
+        <form onSubmit={handleCreateArticle}>
           <label htmlFor="title">
             <h2>제목</h2>
           </label>

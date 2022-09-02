@@ -1,10 +1,10 @@
-import axios from 'axios';
 import {
   GetServerSideProps,
   InferGetServerSidePropsType,
   NextPage,
 } from 'next';
 import Head from 'next/head';
+import { doGetUser } from '../../../api/users';
 import DefaultWrapper from '../../../components/defaultWrapper';
 import Config from '../../../config';
 import IUser from '../../../interfaces/IUser';
@@ -18,13 +18,17 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   const { username } = context.query;
 
-  const response = await axios.get<IUser>(
-    `${process.env.API_HOST}/api/users/${username}`,
-  );
+  if (typeof username !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
+
+  const user = await doGetUser(username);
 
   return {
     props: {
-      user: response.data,
+      user,
     },
   };
 };

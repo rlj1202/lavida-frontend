@@ -6,12 +6,13 @@ import {
   InferGetServerSidePropsType,
   NextPage,
 } from 'next';
-import axios from 'axios';
 import dateFormat from 'dateformat';
 
 import IBoard from '../../../interfaces/IBoard';
 import IArticle from '../../../interfaces/IArticle';
 import DefaultWrapper from '../../../components/defaultWrapper';
+import { doGetBoard } from '../../../api/boards';
+import { doGetArticles } from '../../../api/articles';
 
 interface Props {
   board: IBoard;
@@ -23,14 +24,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 ) => {
   var { bname } = context.query;
 
-  const { data: board } = await axios.get<IBoard>(
-    `${process.env.API_HOST}/api/boards/${bname}`,
-  );
+  if (typeof bname !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
 
-  const { data: articles } = await axios.get<IArticle[]>(
-    `${process.env.API_HOST}/api/articles`,
-    { params: { board: bname } },
-  );
+  const board = await doGetBoard(bname);
+  const articles = await doGetArticles(bname);
 
   return {
     props: {

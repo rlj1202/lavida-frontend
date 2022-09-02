@@ -9,21 +9,19 @@ import {
   InferGetServerSidePropsType,
   NextPage,
 } from 'next';
-import axios from 'axios';
 import DefaultWrapper from '../../components/defaultWrapper';
+import { doGetBoards } from '../../api/boards';
 
 interface Props {
   boards: IBoard[];
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const response = await axios.get<IBoard[]>(
-    `${process.env.API_HOST}/api/boards`,
-  );
+  const boards = await doGetBoards();
 
   return {
     props: {
-      boards: response.data,
+      boards,
     },
   };
 };

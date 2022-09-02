@@ -5,8 +5,8 @@ import Config from '../config';
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import DefaultWrapper from '../components/defaultWrapper';
-import axios from 'axios';
 import IUser from '../interfaces/IUser';
+import { doGetUserInfo, doLogin } from '../api/auth';
 
 const Login: NextPage = ({}) => {
   const router = useRouter();
@@ -18,31 +18,17 @@ const Login: NextPage = ({}) => {
 
   useEffect(() => {
     async function getCurUser() {
-      const user = await axios
-        .post<IUser>(`/api/auth/userinfo`)
-        .then((response) => response.data)
-        .catch((err) => undefined);
-
+      const user = await doGetUserInfo();
       setUser(user);
     }
 
     getCurUser();
   }, []);
 
-  const doLogin = async (event: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const response = await axios.post<{
-      accessToken: string;
-      refreshToken: string;
-    }>(`/api/auth/login`, {
-      username: username,
-      password: password,
-    });
-
-    const data = await response.data;
-
-    localStorage.setItem('refresh_token', data.refreshToken);
+    await doLogin(username, password);
 
     router.back();
   };
@@ -57,7 +43,7 @@ const Login: NextPage = ({}) => {
         {user && <div>이미 로그인 하셨습니다.</div>}
         {!user && (
           <div className="login-form">
-            <form id="login-form" onSubmit={doLogin}>
+            <form id="login-form" onSubmit={handleLogin}>
               <header className="title">로그인</header>
               <div className="row">
                 <label className="label" htmlFor="username">

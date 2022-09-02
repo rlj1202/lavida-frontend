@@ -4,9 +4,9 @@ import { NextPage } from 'next';
 import Config from '../config';
 import DefaultWrapper from '../components/defaultWrapper';
 import { FormEvent, useState } from 'react';
-import axios from 'axios';
-import IUser from '../interfaces/IUser';
 import { useRouter } from 'next/router';
+import { doCreateUser } from '../api/users';
+import { doLogin } from '../api/auth';
 
 const Register: NextPage = ({}) => {
   const router = useRouter();
@@ -19,16 +19,19 @@ const Register: NextPage = ({}) => {
   const doRegister = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    await axios.post<IUser>(`/api/users`, {
-      username: username,
-      password: password,
-      email: email,
+    if (password != passwordCheck) {
+      alert('비밀번호가 일치하지 않습니다.');
+
+      return;
+    }
+
+    await doCreateUser({
+      username,
+      password,
+      email,
     });
 
-    await axios.post(`/api/auth/login`, {
-      username: username,
-      password: password,
-    });
+    await doLogin(username, password);
 
     router.back();
   };
